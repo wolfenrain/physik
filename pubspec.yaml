@@ -1,5 +1,5 @@
 name: physik
-description: A verlet integration based physics engine for Flame.
+description: Physik, a verlet integration based physics engine for Flame.
 version: 0.0.1
 repository: https://github.com/wolfenrain/physik
 

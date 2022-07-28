@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// TODO(wolfen): write documentation
+/// A particle represents a point in space with a position and velocity.
 mixin Particle on PositionComponent {
   /// The previous position of the particle.
   final Vector2 _oldPosition = Vector2.zero();
