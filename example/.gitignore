@@ -52,3 +52,5 @@ ios/
 linux/
 windows/
 macos/
+
+pubspec.lock
