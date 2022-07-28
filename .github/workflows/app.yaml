@@ -1,0 +1,20 @@
+name: app
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/app.yaml"
+
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/app.yaml"
+
+jobs:
+  build:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      working_directory: app
+      flutter_channel: stable
+      flutter_version: 3.0.0
