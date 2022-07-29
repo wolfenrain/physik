@@ -1,7 +1,7 @@
-name: physik
-description: Physik, a verlet integration based physics engine for Flame.
-version: 0.0.1
-repository: https://github.com/wolfenrain/physik
+name: example
+description: An example for the Physik Engine
+publish_to: 'none'
+version: 1.0.0+1
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -10,9 +10,13 @@ dependencies:
   flame: ^1.2.1
   flutter:
     sdk: flutter
+  physik:
+    path: ../
 
 dev_dependencies:
-  flame_test: ^1.6.0
   flutter_test:
     sdk: flutter
   very_good_analysis: ^3.0.1
+
+flutter:
+  uses-material-design: true
