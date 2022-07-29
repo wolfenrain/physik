@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 /// A particle represents a point in space with a position and velocity.
 mixin Particle on PositionComponent {
   /// The previous position of the particle.
-  final Vector2 _oldPosition = Vector2.zero();
+  @visibleForTesting
+  final Vector2 oldPosition = Vector2.zero();
 
   /// The velocity of the particle.
-  final Vector2 _velocity = Vector2.zero();
+  @visibleForTesting
+  final Vector2 velocity = Vector2.zero();
 
   /// The forces applied on the particle.
   Vector2 forces = Vector2.zero();
@@ -18,24 +20,24 @@ mixin Particle on PositionComponent {
   @override
   @mustCallSuper
   Future<void>? onLoad() {
-    _oldPosition.setFrom(position);
+    oldPosition.setFrom(position);
     return super.onLoad();
   }
 
-  /// Update the particle's position and apply [forces] to velocity.
+  /// Update the particle's position and apply [forces] to [velocity].
   void updatePosition(double dt) {
     if (!isMoving) return;
 
     // Store the position so we can calculate the velocity later on.
-    _oldPosition.setFrom(position);
+    oldPosition.setFrom(position);
 
-    _velocity.add(forces.clone()..scale(dt));
-    position.add(_velocity * dt);
+    velocity.add(forces.clone()..scale(dt));
+    position.add(velocity * dt);
   }
 
-  /// Update velocity and reset the [forces].
+  /// Update [velocity] and reset the [forces].
   void updateForces(double dt) {
-    _velocity.setFrom((position - _oldPosition)..scale(1 / dt));
+    velocity.setFrom((position - oldPosition)..scale(1 / dt));
     forces.setZero();
   }
 }
