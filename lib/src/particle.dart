@@ -1,7 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
+/// {@template particle}
 /// A particle represents a point in space with a position and velocity.
+/// {@endtemplate}
 mixin Particle on PositionComponent {
   /// The previous position of the particle.
   @visibleForTesting
@@ -16,6 +18,9 @@ mixin Particle on PositionComponent {
 
   /// Indicates if the particle is moving.
   bool isMoving = true;
+
+  /// The mass of the particle.
+  double mass = 1;
 
   @override
   @mustCallSuper
