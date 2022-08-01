@@ -4,11 +4,11 @@ import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:physik/physik.dart';
 
-void main() {
-  runApp(GameWidget(game: ClothSimulation()));
-}
-
 class ClothSimulation extends FlameGame with HasDraggables {
+  final dragForceRadius = 20.0;
+  final draggingPoints = <int, Vector2>{};
+  final draggingForces = <int, Vector2>{};
+
   @override
   Future<void>? onLoad() {
     add(FpsTextComponent());
@@ -61,35 +61,72 @@ class ClothSimulation extends FlameGame with HasDraggables {
   }
 
   @override
-  void onDragUpdate(int pointerId, DragUpdateInfo info) {
-    super.onDragUpdate(pointerId, info);
+  void onDragCancel(int pointerId) {
+    draggingPoints.remove(pointerId);
+    draggingForces.remove(pointerId);
 
-    applyForceOnCloth(info.eventPosition.game, info.delta.game * 1500);
+    super.onDragCancel(pointerId);
   }
 
-  void applyForceOnCloth(Vector2 position, Vector2 force) {
-    final solver = firstChild<PhysicsSolver>()!;
+  @override
+  void onDragEnd(int pointerId, DragEndInfo info) {
+    draggingPoints.remove(pointerId);
+    draggingForces.remove(pointerId);
+
+    super.onDragEnd(pointerId, info);
+  }
+
+  @override
+  void onDragUpdate(int pointerId, DragUpdateInfo info) {
+    draggingPoints[pointerId] = info.eventPosition.game;
+    draggingForces[pointerId] = info.delta.game * 1500;
+
+    super.onDragUpdate(pointerId, info);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    for (final point in draggingPoints.values) {
+      canvas.drawCircle(point.toOffset(), dragForceRadius, debugPaint);
+    }
+  }
+}
+
+class ClothPhysicsSolver extends Component
+    with PhysicsSolver, HasGameRef<ClothSimulation> {
+  @override
+  void apply(double dt) {
+    applyForceOnCloth();
+  }
+
+  @override
+  void solve(double dt) {}
+
+  void applyForceOnCloth() {
+    if (gameRef.draggingPoints.isEmpty) return;
+
+    final solver = gameRef.firstChild<PhysicsSolver>()!;
     for (final particle in solver.particles) {
-      if (inRadius(particle, position, 100)) {
-        particle.forces.add(force);
+      for (final point in gameRef.draggingPoints.entries) {
+        if (inRadius(particle, point.value, gameRef.dragForceRadius)) {
+          particle.forces.add(gameRef.draggingForces[point.key]!);
+        }
       }
     }
   }
 
   bool inRadius(Particle particle, Vector2 center, double radius) {
     final distance = particle.position - center;
-    return distance.x * distance.x + distance.y * distance.y < radius * radius;
+    return distance.length2 < radius * radius;
   }
-}
-
-class ClothPhysicsSolver extends Component with PhysicsSolver {
-  @override
-  void apply(double dt) {}
-
-  @override
-  void solve(double dt) {}
 }
 
 class ClothParticle extends PositionComponent with Particle {
   ClothParticle({super.position});
+}
+
+void main() {
+  runApp(GameWidget(game: ClothSimulation()));
 }

@@ -40,7 +40,8 @@ class LinkConstraint extends Component {
   /// not broken.
   bool get isValid => particle1.isMounted && particle2.isMounted && !broken;
 
-  /// Solve the constraint.
+  /// Solve the constraint. This will move the particles to the correct
+  /// distance or break the constraint if the distance is too long.
   void solve() {
     if (!isValid) return;
 
@@ -52,9 +53,9 @@ class LinkConstraint extends Component {
       _broken = currentDistance > distance * maxElongationRatio;
 
       final normal = distanceBetween / currentDistance;
-      final difference = distance - currentDistance;
+      final delta = distance - currentDistance;
       final pullingForce =
-          normal * -(difference * strength) / (particle1.mass + particle2.mass);
+          normal * -(delta * strength) / (particle1.mass + particle2.mass);
 
       // Apply the pulling force to both particles.
       if (particle1.isMoving) {

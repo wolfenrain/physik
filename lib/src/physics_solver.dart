@@ -44,8 +44,8 @@ mixin PhysicsSolver on Component {
 
     for (var i = subSteps; i > 0; i--) {
       applyGravity();
-      updatePositions(subStepDt);
       apply(subStepDt);
+      updatePositions(subStepDt);
       solveConstraints();
       solve(subStepDt);
       updateForces(subStepDt);
@@ -91,8 +91,13 @@ mixin PhysicsSolver on Component {
   }
 
   /// Apply custom physics logic, like applying constraints to particles.
+  ///
+  /// This is run before any forces are applied to particles.
   void apply(double dt);
 
   /// Solve custom physics logic, like collisions.
+  ///
+  /// This is run after forces are applied to particles and before the forces
+  /// are cleared.
   void solve(double dt);
 }

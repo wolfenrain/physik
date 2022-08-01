@@ -146,5 +146,55 @@ void main() {
         },
       );
     });
+
+    group('solveConstraints', () {
+      flameGame.test('solve constraints', (game) async {
+        final solver = _TestSolver(subStep: 1);
+        await game.ensureAdd(solver);
+
+        final particle1 = _TestParticle(position: Vector2.zero());
+        final particle2 = _TestParticle(position: Vector2.all(100));
+        final constraint = LinkConstraint(
+          particle1: particle1,
+          particle2: particle2,
+          distance: 100,
+        );
+
+        await solver.ensureAdd(particle1);
+        await solver.ensureAdd(particle2);
+        await solver.ensureAdd(constraint);
+
+        solver.solveConstraints();
+
+        expect(particle1.position, closeToVector(Vector2.all(14.644), 0.001));
+        expect(particle2.position, closeToVector(Vector2.all(85.355), 0.001));
+        expect(constraint.isValid, isTrue);
+      });
+    });
+
+    group('removeBrokenConstraints', () {
+      flameGame.test('removes broken constraints', (game) async {
+        final solver = _TestSolver(subStep: 1);
+        await game.ensureAdd(solver);
+
+        final particle1 = _TestParticle(position: Vector2.zero());
+        final particle2 = _TestParticle(position: Vector2.all(200));
+        final constraint = LinkConstraint(
+          particle1: particle1,
+          particle2: particle2,
+          distance: 100,
+        );
+
+        await solver.ensureAdd(particle1);
+        await solver.ensureAdd(constraint);
+
+        expect(solver.constraints, contains(constraint));
+
+        solver.removeBrokenConstraints();
+        await game.ready();
+
+        expect(solver.constraints, isEmpty);
+      });
+    });
   });
 }
