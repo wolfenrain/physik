@@ -157,7 +157,7 @@ void main() {
       });
 
       flameGame.test(
-        'returns true if both particles are mounted and the constraint is not broken',
+        '''returns true if both particles are mounted and the constraint is not broken''',
         (game) async {
           final particle1 = _TestParticle(position: Vector2.zero());
           final particle2 = _TestParticle(position: Vector2.all(100));
