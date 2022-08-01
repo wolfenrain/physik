@@ -11,13 +11,10 @@ class PhysikExample extends FlameGame with HasDraggables {
 
   @override
   Future<void>? onLoad() {
-    add(
-      CircleSolver(
-        radius: 200,
-      ),
-    );
-
     add(FpsTextComponent());
+
+    final solver = CircleSolver(radius: 200);
+    add(solver);
 
     camera.followVector2(Vector2.zero());
     return null;
@@ -59,11 +56,15 @@ class CircleSolver extends PositionComponent with PhysicsSolver, Draggable {
   }
 
   @override
-  void apply(double dt) {
-    applyCircleConstraints();
+  void apply(double dt) {}
+
+  @override
+  void solve(double dt) {
+    solveCircleConstraints();
+    solveCollisions();
   }
 
-  void applyCircleConstraints() {
+  void solveCircleConstraints() {
     final center = size / 2;
     for (final particle in particles) {
       final distanceToCircleBorder = particle.position - center;
@@ -79,11 +80,6 @@ class CircleSolver extends PositionComponent with PhysicsSolver, Draggable {
         );
       }
     }
-  }
-
-  @override
-  void solve(double dt) {
-    solveCollisions();
   }
 
   void solveCollisions() {
