@@ -9,13 +9,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Draggable;
 import 'package:physik/physik.dart';
 
-class PhysikExample extends FlameGame {
+class BubblesExample extends FlameGame {
   @override
   Color backgroundColor() => const Color.fromARGB(255, 172, 172, 172);
 
   @override
   Future<void>? onLoad() {
-    final solver = CircleSolver(radius: 200);
+    final solver = BubbleSolver();
     if (kDebugMode) {
       add(DebugInformation(solver: solver));
     }
@@ -25,29 +25,23 @@ class PhysikExample extends FlameGame {
   }
 }
 
-class CircleSolver extends PositionComponent with PhysicsSolver {
-  CircleSolver({
-    required double radius,
-    super.position,
-  }) : super(size: Vector2.all(radius * 2), anchor: Anchor.center) {
+class BubbleSolver extends PositionComponent
+    with PhysicsSolver, HasGameReference<BubblesExample> {
+  BubbleSolver() {
     gravity.setFrom(baseGravity);
   }
-
-  static Vector2 baseGravity = Vector2(0, 1500);
-
-  double get radius => size.x / 2;
 
   @override
   FutureOr<void>? onLoad() {
     add(
       TimerComponent(
-        period: 0.2,
+        period: 1,
         onTick: () {
           if (particles.length < 20) {
             add(
-              CircleParticle(
-                position: Vector2(size.x * 0.75, size.y * 0.25),
-                radius: 10,
+              Bubble(
+                position: Vector2.random()..multiply(game.size / 2),
+                radius: Random().nextInt(10) + 10,
                 color: const Color(0xFFFF0000),
               ),
             );
@@ -59,11 +53,27 @@ class CircleSolver extends PositionComponent with PhysicsSolver {
     return super.onLoad();
   }
 
+  int addBubble() {
+    final index = particles.length;
+    add(
+      Bubble(
+        position: Vector2.random()..multiply(game.size / 2),
+        radius: Random().nextInt(10) + 10,
+        color: const Color(0xFFFF0000),
+      ),
+    );
+    return index + 1;
+  }
+
+  void updateBubble(int index, double radius) {
+    (particles[index] as Bubble).radius = radius;
+  }
+
   @override
   void applyGravity(int particleIndex) {
     final particle = particles[particleIndex];
 
-    final direction = (Vector2.all(radius) - particle.position).normalized();
+    final direction = (game.size / 2 - particle.position).normalized();
 
     particle.forces.add(direction..multiply(gravity));
   }
@@ -73,25 +83,34 @@ class CircleSolver extends PositionComponent with PhysicsSolver {
 
   @override
   void solve(double dt, int particleIndex) {
-    solveCircleConstraints(particleIndex);
+    solveRectangleConstraints(particleIndex);
     solveCollisions(particleIndex);
   }
 
-  void solveCircleConstraints(int particleIndex) {
+  void solveRectangleConstraints(int particleIndex) {
     final particle = particles[particleIndex];
 
-    final center = size / 2;
-    final distanceToCircleBorder = particle.position - center;
-    final distance = distanceToCircleBorder.length;
-    final particleRadius = particle.size.x / 2;
+    // Define the rectangle boundaries
+    const rectX = 0.0;
+    const rectY = 0.0;
+    final rectWidth = game.size.x;
+    final rectHeight = game.size.y;
 
-    if (distance > radius - particleRadius) {
-      final normal = distanceToCircleBorder / distance;
+    // Calculate the half-size of the particle
+    final particleRadiusX = particle.size.x / 2;
+    final particleRadiusY = particle.size.y / 2;
 
-      particle.position.setValues(
-        center.x + normal.x * (radius - particleRadius),
-        center.y + normal.y * (radius - particleRadius),
-      );
+    // Ensure the particle's position stays within the rectangle bounds
+    if (particle.position.x - particleRadiusX < rectX) {
+      particle.position.x = rectX + particleRadiusX;
+    } else if (particle.position.x + particleRadiusX > rectX + rectWidth) {
+      particle.position.x = rectX + rectWidth - particleRadiusX;
+    }
+
+    if (particle.position.y - particleRadiusY < rectY) {
+      particle.position.y = rectY + particleRadiusY;
+    } else if (particle.position.y + particleRadiusY > rectY + rectHeight) {
+      particle.position.y = rectY + rectHeight - particleRadiusY;
     }
   }
 
@@ -120,13 +139,6 @@ class CircleSolver extends PositionComponent with PhysicsSolver {
     }
   }
 
-  // @override
-  // bool onDragUpdate(DragUpdateInfo info) {
-  //   position.add(info.delta.game);
-  //   gravity.setFrom(-info.delta.game.clone() * baseGravity.y);
-  //   return false;
-  // }
-
   @override
   void update(double dt) {
     gravity.lerp(baseGravity, dt);
@@ -135,19 +147,24 @@ class CircleSolver extends PositionComponent with PhysicsSolver {
 
   @override
   void render(Canvas canvas) {
-    canvas.drawCircle(Offset(radius, radius), radius, Paint());
+    canvas.drawRect(Rect.fromLTWH(0, 0, game.size.x, game.size.y), Paint());
     super.render(canvas);
   }
+
+  static Vector2 baseGravity = Vector2(1500, 1500);
 }
 
-class CircleParticle extends PositionComponent with Particle, HasPaint {
-  CircleParticle({
+class Bubble extends PositionComponent with Particle, HasPaint {
+  Bubble({
     required double radius,
     required Color color,
     super.position,
   }) : super(size: Vector2.all(radius * 2), anchor: Anchor.center) {
     paint.color = color;
   }
+
+  double get radius => size.x / 2;
+  set radius(double radius) => size.setFrom(Vector2.all(radius * 2));
 
   @override
   void render(Canvas canvas) {
@@ -158,5 +175,5 @@ class CircleParticle extends PositionComponent with Particle, HasPaint {
 }
 
 void main() {
-  runApp(GameWidget(game: PhysikExample()));
+  runApp(GameWidget(game: BubblesExample()));
 }

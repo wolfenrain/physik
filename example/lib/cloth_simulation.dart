@@ -1,19 +1,19 @@
+import 'package:example/debug_information.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:physik/physik.dart';
 
-class ClothSimulation extends FlameGame with HasDraggables {
+class ClothSimulation extends FlameGame {
   final dragForceRadius = 20.0;
   final draggingPoints = <int, Vector2>{};
   final draggingForces = <int, Vector2>{};
 
   @override
   Future<void>? onLoad() {
-    add(FpsTextComponent());
-
     final solver = ClothPhysicsSolver();
+    add(DebugInformation(solver: solver));
     add(solver);
 
     const amount = 50;
@@ -60,29 +60,29 @@ class ClothSimulation extends FlameGame with HasDraggables {
     return null;
   }
 
-  @override
-  void onDragCancel(int pointerId) {
-    draggingPoints.remove(pointerId);
-    draggingForces.remove(pointerId);
+  // @override
+  // void onDragCancel(int pointerId) {
+  //   draggingPoints.remove(pointerId);
+  //   draggingForces.remove(pointerId);
 
-    super.onDragCancel(pointerId);
-  }
+  //   super.onDragCancel(pointerId);
+  // }
 
-  @override
-  void onDragEnd(int pointerId, DragEndInfo info) {
-    draggingPoints.remove(pointerId);
-    draggingForces.remove(pointerId);
+  // @override
+  // void onDragEnd(int pointerId, DragEndInfo info) {
+  //   draggingPoints.remove(pointerId);
+  //   draggingForces.remove(pointerId);
 
-    super.onDragEnd(pointerId, info);
-  }
+  //   super.onDragEnd(pointerId, info);
+  // }
 
-  @override
-  void onDragUpdate(int pointerId, DragUpdateInfo info) {
-    draggingPoints[pointerId] = info.eventPosition.game;
-    draggingForces[pointerId] = info.delta.game * 1500;
+  // @override
+  // void onDragUpdate(int pointerId, DragUpdateInfo info) {
+  //   draggingPoints[pointerId] = info.eventPosition.game;
+  //   draggingForces[pointerId] = info.delta.game * 1500;
 
-    super.onDragUpdate(pointerId, info);
-  }
+  //   super.onDragUpdate(pointerId, info);
+  // }
 
   @override
   void render(Canvas canvas) {
@@ -97,22 +97,20 @@ class ClothSimulation extends FlameGame with HasDraggables {
 class ClothPhysicsSolver extends Component
     with PhysicsSolver, HasGameRef<ClothSimulation> {
   @override
-  void apply(double dt) {
-    applyForceOnCloth();
+  void apply(double dt, int particleIndex) {
+    applyForceOnCloth(particleIndex);
   }
 
   @override
-  void solve(double dt) {}
+  void solve(double dt, int particleIndex) {}
 
-  void applyForceOnCloth() {
+  void applyForceOnCloth(int particleIndex) {
     if (gameRef.draggingPoints.isEmpty) return;
+    final particle = particles[particleIndex];
 
-    final solver = gameRef.firstChild<PhysicsSolver>()!;
-    for (final particle in solver.particles) {
-      for (final point in gameRef.draggingPoints.entries) {
-        if (inRadius(particle, point.value, gameRef.dragForceRadius)) {
-          particle.forces.add(gameRef.draggingForces[point.key]!);
-        }
+    for (final point in gameRef.draggingPoints.entries) {
+      if (inRadius(particle, point.value, gameRef.dragForceRadius)) {
+        particle.forces.add(gameRef.draggingForces[point.key]!);
       }
     }
   }

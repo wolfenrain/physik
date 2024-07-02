@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +26,7 @@ mixin Particle on PositionComponent {
 
   @override
   @mustCallSuper
-  Future<void>? onLoad() {
+  FutureOr<void> onLoad() {
     oldPosition.setFrom(position);
     return super.onLoad();
   }
@@ -36,8 +38,14 @@ mixin Particle on PositionComponent {
     // Store the position so we can calculate the velocity later on.
     oldPosition.setFrom(position);
 
-    velocity.add(forces.clone()..scale(dt));
-    position.add(velocity * dt);
+    velocity
+      ..x += forces.x * dt
+      ..y += forces.y * dt;
+    position
+      ..x += velocity.x * dt
+      ..y += velocity.y * dt;
+    // velocity.add(forces.clone()..scale(dt));
+    // position.add(velocity * dt);
   }
 
   /// Update [velocity] and reset the [forces].
