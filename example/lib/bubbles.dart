@@ -38,12 +38,9 @@ class BubbleSolver extends PositionComponent
         period: 1,
         onTick: () {
           if (particles.length < 20) {
-            add(
-              Bubble(
-                position: Vector2.random()..multiply(game.size / 2),
-                radius: Random().nextInt(10) + 10,
-                color: const Color(0xFFFF0000),
-              ),
+            addBubble(
+              position: Vector2.random()..multiply(game.size / 2),
+              radius: Random().nextInt(10) + 10,
             );
           }
         },
@@ -53,12 +50,15 @@ class BubbleSolver extends PositionComponent
     return super.onLoad();
   }
 
-  int addBubble() {
+  int addBubble({
+    required Vector2 position,
+    required double radius,
+  }) {
     final index = particles.length;
     add(
       Bubble(
-        position: Vector2.random()..multiply(game.size / 2),
-        radius: Random().nextInt(10) + 10,
+        position: position,
+        radius: radius,
         color: const Color(0xFFFF0000),
       ),
     );
